@@ -2,7 +2,20 @@ function init() {
   var taistApi;
   
   var dmtcEl=null;
+  var userId=null;
+  var mailTemplates={A:[
+    {topic:"Hello",Template:"Dear $contacts-lastname$!"},
+    {topic:"Bye",Template:"Dear $contacts-lastname$!"},
+    {topic:"Ping",Template:"Dear $contacts-lastname$!"}
+  ]};
 
+  function saveToStorage(){
+   localStorage.setItem(userId,JSON.stringify(mailTemplates));
+  }
+
+  function readFromStorage(){
+   mailTemplates=JSON.parse(localStorage.getItem(userId)); 
+  }
 
   function rebuildTemplates(){
     var  sdvEl = document.querySelector(".SettingsDealsView");
@@ -18,8 +31,10 @@ function init() {
       +'<div style="clear:both;height:1px">&nbsp;</div>'
       +'<div class="SettingsSignatureView" style="display: none;">'
        +'<div class="nmbl-FormTextBox nmbl-FormTextBox-name nmbl-FormTextBox-tipped">'
-        +'<div class="dollar_sign">Topic:</div><input type="text" maxlength="90">'
+        +'<div class="dollar_sign">Topic:</div>'
+        +'<input type="text" maxlength="90">'
        +'</div>'
+      +'<div class="dollar_sign">Body:</div>' 
       +'<textarea class="nmbl-AdvancedTextArea" >'
        +'Dear $contacts-lastname$!\r\n\r\n'
        +'Thanks for subscribing super CRM.\r\n'
@@ -29,7 +44,8 @@ function init() {
        +'$username$ '
       +'</textarea>'
       +'<div class="buttonFooter">'
-       +'<div class="nmbl-ButtonContent">Save Template</div>'
+       +'<a class="gwt-Anchor save-Mail-Template">Save</a>&nbsp;'
+       +'<a class="gwt-Anchor cancel-Mail-Template">Cancel</a>'
       +'</div>'
       +'<div style="clear:both;"></div>'
       +'</div>'
@@ -38,6 +54,9 @@ function init() {
       +'</div>'
 
       sdvEl.appendChild(dmtcEl);
+
+      userId=document.querySelector("a.userName");      
+
       var atEl=dmtcEl.querySelector("a.add-Mail-Template");
       if(atEl){
         atEl.onclick=function(){
@@ -45,6 +64,7 @@ function init() {
           var ssvEl=dmtcEl.querySelector(".SettingsSignatureView");
           if(ssvEl){
             ssvEl.style.display='block';
+            atEl.style.display='none';
           }
         }
         taistApi.log("a.add-Mail-Template");
@@ -54,10 +74,29 @@ function init() {
       if(stEl){
         stEl.onclick=function(){
           taistApi.log("stEl.onclick");
+          if(userId){
+            localStorage.setItem(userId, foo);
+
+          }
           var ssvEl=dmtcEl.querySelector(".SettingsSignatureView");
           if(ssvEl){ssvEl.style.display='none';}
+          var atEl=dmtcEl.querySelector("a.add-Mail-Template");
+          if(atEl){atEl.style.display='block';}
         }
         taistApi.log("a.save-Mail-Template");
+      }
+
+
+      var ctEl=dmtcEl.querySelector("a.cancel-Mail-Template");
+      if(ctEl){
+        ctEl.onclick=function(){
+          taistApi.log("ctEl.onclick");
+          var ssvEl=dmtcEl.querySelector(".SettingsSignatureView");
+          if(ssvEl){ssvEl.style.display='none';}
+          var atEl=dmtcEl.querySelector("a.add-Mail-Template");
+          if(atEl){atEl.style.display='block';}
+        }
+        taistApi.log("a.cancel-Mail-Template");
       }
 
     }
