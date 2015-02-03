@@ -1,0 +1,10 @@
+{
+  "id": "nimble_deal_mail_templates",
+  "js": "nimble_deal_mail_templates.js",
+  "css": "nimble_deal_mail_templates.css",
+  "siteRegexp": "app.nimble.com",
+  "siteName":"Nimble",
+  "title":"Mail templates for a deal",
+  "shortDescription":"Adds mail templates for a deal",
+  "description": "./nimble_deal_mail_templates.md"
+}

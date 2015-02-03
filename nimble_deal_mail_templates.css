@@ -1,0 +1,10 @@
+.SettingsDealsView .dealMailTemplatesContainer {
+margin-top: 30px;
+width: 565px;
+}
+
+.SettingsDealsView .dealMailTemplatesContainer .gwt-Anchor-range {
+display: block;
+height: 23px;
+margin: 9px;
+}
