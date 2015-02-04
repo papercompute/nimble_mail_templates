@@ -6,11 +6,14 @@ function init() {
   var dmtocEl=null;
   var ssntEl=null;
   var ifEl=null;
+  var hifmainEl=null;
+  var hackEmail="";
+
 
   var mailTemplates=[
-    {name:"template1",topic:"Hello $contacts-lastname$ log name topic template aa s s s df sd fsd fs df sd f sd fs d fs df s df s dffdf end",body:"Dear $contacts-lastname$!"},
-    {name:"template2",topic:"Bye $contacts-lastname$",body:"Dear $contacts-lastname$!  as da sd a sd a sd as d as da sd a sd a s da sd a sd as d"},
-    {name:"template3",topic:"Ping $contacts-lastname$",body:"Dear $contacts-lastname$!"}
+    {name:"template1",subject:"Hello $contacts-lastname$ log name topic template aa s s s df sd fsd fs df sd f sd fs d fs df s df s dffdf end",body:"Dear $contacts-lastname$!"},
+    {name:"template2",subject:"Bye $contacts-lastname$",body:"Dear $contacts-lastname$!  as da sd a sd a sd as d as da sd a sd a s da sd a sd as d"},
+    {name:"template3",subject:"Ping $contacts-lastname$",body:"Dear $contacts-lastname$!"}
   ];
 
 
@@ -36,6 +39,8 @@ xhr.onload = function() {
 xhr.send();
 }
 
+
+
   function saveToStorage(id){
    localStorage.setItem(id,JSON.stringify(mailTemplates));
   }
@@ -57,9 +62,62 @@ xhr.send();
       );
   }
 
+
+  function HackDealEmail(){
+
+            var rtEl=dmtocEl.parentNode.querySelector("a.relatedTo");
+            if(rtEl){
+              taistApi.log("a.relatedTo",rtEl);
+              var relatedtoObserver = new MutationObserver(function(mutations) {
+              console.log("relatedtoObserver!");
+              if(rtEl.href.length>0){
+              relatedtoObserver.disconnect();
+              console.log("rtEl.href",rtEl.href);
+              // hack: create iframe, load & get mail            
+              hifEl = document.createElement("iframe");
+              hifEl.style.display="none";
+              hifEl.setAttribute("src", rtEl.href);
+              hifEl.classList.add('hiddenIframe'); 
+              dmtocEl.appendChild(hifEl);
+              hifEl.addEventListener('load', function() {
+                console.log("if load!");
+                var ifbodyObserver = new MutationObserver(function(mutations) {
+                 //console.log("ifbodyObserver!");                 
+                 if(hifEl){ 
+                  //console.log("hifEl!");
+                  hifmainEl=hifEl.contentDocument.body.querySelector("#main");
+                  if(hifmainEl){ 
+                   //console.log("mainEl!"); 
+                   var ifmainObserver = new MutationObserver(function(mutations) {
+                     //console.log("ifmainObserver!");
+                     var emailEl=hifmainEl.querySelector(".email");
+                     if(emailEl){
+                      //console.log("!!!----------email-----------!!!");
+                      var aEl=emailEl.querySelector("a");
+                      if(aEl){
+                       hackEmail=aEl.href;
+                       console.log("hackEmail",hackEmail);
+                      }
+                      ifmainObserver.disconnect();
+                     }
+                     
+                   });
+                   ifmainObserver.observe(hifmainEl, { attributes: true, childList: true, characterData: true,subtree: true});
+                   ifbodyObserver.disconnect();
+                  }  
+                 }
+                });
+                ifbodyObserver.observe(hifEl.contentDocument.body, { attributes: true, childList: true, characterData: true,subtree: true});
+              });
+              } // if href  
+              });// relatedtoObserver
+              relatedtoObserver.observe(rtEl, { attributes: true, childList: true, characterData: true,subtree: true}); 
+            }
+  }
+
   function rebuildDealHack(piwEl){
     //var  piwEl = document.querySelector(".profileInfoWrapper");
-    console.log('rebuildDealHack()',piwEl);
+    //console.log('rebuildDealHack()',piwEl);
     if(piwEl){
      if (!document.querySelector(".dealMailToContainer")){
 
@@ -82,46 +140,27 @@ xhr.send();
       dmtocEl.innerHTML=html;
       giEl.appendChild(dmtocEl);
 
+      HackDealEmail();
+
       ssntEl=dmtocEl.querySelector("a.showSendMailTemplates");
       if(ssntEl){
         ssntEl.onclick=function(){
           //var ssntEl=dmtocEl.querySelector("a.showSendMailTemplates");
           taistApi.log("ssntEl.onclick");
           if(ssntEl.classList.contains('showAll')){
-            var rtEl=dmtocEl.parentNode.querySelector("a.relatedTo");
-            if(rtEl){
-              taistApi.log("a.relatedTo",rtEl.href);
-              // "https://app.nimble.com/"
-              //prepareMailToData(rtEl.href);
-              //prepareMailToData("#app/contacts/list?filter=all&view_type=grid&col_preset=sales_management");
-              hifEl = document.createElement("iframe");
-              hifEl.style.display="none";
-              hifEl.setAttribute("src", rtEl.href);
-              hifEl.classList.add('hiddenIframe'); 
-              dmtocEl.appendChild(hifEl);
-              hifEl.addEventListener('load', function() {
-                console.log("if load!");
-                var ifObserver = new MutationObserver(function(mutations) {
-                 console.log("ifObserver!");
-                 //var hifEl=querySelector(".hiddenIframe");
-                 if(hifEl){ console.log("hifEl!");
-                  var emEl=hifEl.querySelector(".email");
-                  if(emEl){ console.log("emEl!"); }  
-                 }
-                });
-                ifObserver.observe(ifEl.contentDocument.body, { attributes: true, childList: true, characterData: true,subtree: true});
-              });
-
-
-            }
+//
             // show all
             var coEl=ssntEl.parentNode.querySelector(".sendToMailTemplatesContainer");
             if(!coEl){console.error('!sendToMailTemplatesContainer');return;}
             var email='hero@hero.com';
+            if(hackEmail.length>0){email=hackEmail;}
+
+            //<a href=”mailto:obama@whitehouse.gov?subject=Congrats%20Obama&body=Enjoy%20your%20stay%0ARegards%20″>
+
+
             var html=''
             for(var i=0;i<mailTemplates.length;i++){
-              html+='<a href="mailto:'+email+'">'+mailTemplates[i].name
-                   +'</a>'
+              html+='<a href="mailto:'+email+'?subject='+escape(mailTemplates[i].subject)+'&body='+escape(mailTemplates[i].body)+'">'+mailTemplates[i].name +'</a></br>'
             }
             coEl.innerHTML=html;
             
@@ -141,9 +180,6 @@ xhr.send();
       }
 
       console.log('!!!.dealMailToContainer 111');
-
-
-
       }
 
      }
@@ -292,6 +328,18 @@ var profileInfoWrapperCounter=0;
 function prepareIt() {
 
 taistApi.log("prepareIt");
+
+
+window.addEventListener("hashchange", function(){
+ var hash=location.hash;
+ console.log('hashchange',hash);
+ if(hash.search("#app/deals/")==0)
+ {
+  console.log("#app/deals/");
+  //HackDealEmail();
+ }
+}, false);
+
 
 
 var bodyTarget = document.querySelector('body');
