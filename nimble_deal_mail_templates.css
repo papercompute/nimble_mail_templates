@@ -1,10 +1,99 @@
-.SettingsDealsView .dealMailTemplatesContainer {
+.dealMailTemplatesContainer {
 margin-top: 30px;
 width: 565px;
 }
 
-.SettingsDealsView .dealMailTemplatesContainer .gwt-Anchor-range {
+.dealMailTemplatesContainer .gwt-Anchor-range {
 display: block;
 height: 23px;
 margin: 9px;
+}
+
+.dealMailTemplatesContainer .mail-temlate-label {
+/*min-width: 250px;*/
+padding-top: 3px;
+float: left;
+margin-left: 10px;
+}
+
+.ModifyMailTemplateView{
+margin-bottom: 5px;
+margin-top: 5px;
+}
+
+.ModifyMailTemplateView .nmbl-AdvancedTextBox {
+padding: 0px 3px 3px 3px;
+width: 415px;
+}
+
+.ModifyMailTemplateView .nmbl-AdvancedTextArea {
+height: 140px;
+/*resize: none;*/
+padding: 10px;
+box-sizing: border-box;
+-moz-box-sizing: border-box;
+-ms-box-sizing: border-box;
+-webkit-box-sizing: border-box;
+width: 490px;
+}
+
+.ModifyMailTemplateView .mailTemlateTopicView{
+margin-bottom: 5px;
+padding-top: 5px;
+padding-bottom: 5px;
+width: 100%;
+}
+
+.ModifyMailTemplateView .buttonFooter{
+margin-top: 5px;
+}
+
+
+.mailTemplateWidget {
+border-bottom: 1px solid #f3f3f3;
+padding: 0 10px;
+}
+
+
+.mailTemplateWidget .mailTemplateViewContainer{
+padding: 15px 0;
+}
+
+
+.mailTemplatesList .mailTemplateWidget:first-child {
+border-top: 1px solid #f3f3f3;
+/*margin-top: 15px;*/
+}
+.mailTemplateWidget .mailTemplateViewTopic {
+color: #474747;
+float: left;
+min-width: 120px;
+max-width: 320px;
+font-size: 100%;
+}
+
+.mailTemplateWidget .mailTemplateViewBody {
+color: #474747;
+float: left;
+min-width: 180px;
+max-width: 180px;
+/*margin-right: 180px;*/
+font-size: 100%;
+}
+
+.ModifyMailTemplateView .delete-Mail-Template{
+float: right;
+margin-right: 80px;
+}
+
+.mailTemplateWidget .mailTemplateViewContainer .hoverContainer {
+float: right;
+margin-right: 80px;
+min-width: 80px;
+}
+
+.mailTemplateWidget .mailTemplateViewContainer .hoverContainer .gwt-Anchor.deleteAnchor {
+color: #f00;
+float: right;
+margin-right: 80px;
 }
