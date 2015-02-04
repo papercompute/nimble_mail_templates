@@ -4,11 +4,13 @@ function init() {
 
   var dmtcEl=null;
   var dmtocEl=null;
+  var ssntEl=null;
+  var ifEl=null;
 
   var mailTemplates=[
-    {topic:"Hello log name topic template aa s s s df sd fsd fs df sd f sd fs d fs df s df s dffdf end",body:"Dear $contacts-lastname$!"},
-    {topic:"Bye",body:"Dear $contacts-lastname$!  as da sd a sd a sd as d as da sd a sd a s da sd a sd as d"},
-    {topic:"Ping",body:"Dear $contacts-lastname$!"}
+    {name:"template1",topic:"Hello $contacts-lastname$ log name topic template aa s s s df sd fsd fs df sd f sd fs d fs df s df s dffdf end",body:"Dear $contacts-lastname$!"},
+    {name:"template2",topic:"Bye $contacts-lastname$",body:"Dear $contacts-lastname$!  as da sd a sd a sd as d as da sd a sd a s da sd a sd as d"},
+    {name:"template3",topic:"Ping $contacts-lastname$",body:"Dear $contacts-lastname$!"}
   ];
 
 
@@ -20,6 +22,19 @@ const templateBody =
        +'Regards,\r\n'
        +'$username$ ';
 
+function httpGet(url, cbOk, cbErr){
+var xhr = new XMLHttpRequest();
+xhr.open('GET', encodeURI(url));
+xhr.onload = function() {
+    if (xhr.status === 200) {
+        if(cbOk)cbOk(xhr.responseText);
+    }
+    else {
+        if(cbErr)cbErr(xhr.status);
+    }
+};
+xhr.send();
+}
 
   function saveToStorage(id){
    localStorage.setItem(id,JSON.stringify(mailTemplates));
@@ -30,6 +45,16 @@ const templateBody =
    if(item){
     mailTemplates=JSON.parse(item); 
    }
+  }
+
+  function prepareMailToData(url){
+    httpGet(url,
+      function(text){
+        console.log(text);
+        //text.find("<a href="mailto:care@nimble.com">care@</a>")
+      },
+      function(err){console.error(err);}
+      );
   }
 
   function rebuildDealHack(piwEl){
@@ -47,16 +72,78 @@ const templateBody =
 
       dmtocEl = document.createElement("div");
       dmtocEl.setAttribute('class', 'dealMailToContainer');
-      var html='<div class="dealMainField">'
-  	 +'<div style="">Hack:<div class="stage" hastooltip="true">'
-          +'<div class="gwt-HTML">Hack Makers</div>'
-          +'</div>'
-         +'</div>'
-        +'</div>';
+      var html=
+         '<div class="dealMainToField">'
+         // hideAll showSendMailTemplates
+         +'<div class="sendToMailTemplatesContainer"></div>'         
+         +'<a class="showAll showSendMailTemplates">Show mail templates</a>'        
+         +'</div>';
 
       dmtocEl.innerHTML=html;
       giEl.appendChild(dmtocEl);
+
+      ssntEl=dmtocEl.querySelector("a.showSendMailTemplates");
+      if(ssntEl){
+        ssntEl.onclick=function(){
+          //var ssntEl=dmtocEl.querySelector("a.showSendMailTemplates");
+          taistApi.log("ssntEl.onclick");
+          if(ssntEl.classList.contains('showAll')){
+            var rtEl=dmtocEl.parentNode.querySelector("a.relatedTo");
+            if(rtEl){
+              taistApi.log("a.relatedTo",rtEl.href);
+              // "https://app.nimble.com/"
+              //prepareMailToData(rtEl.href);
+              //prepareMailToData("#app/contacts/list?filter=all&view_type=grid&col_preset=sales_management");
+              hifEl = document.createElement("iframe");
+              hifEl.style.display="none";
+              hifEl.setAttribute("src", rtEl.href);
+              hifEl.classList.add('hiddenIframe'); 
+              dmtocEl.appendChild(hifEl);
+              hifEl.addEventListener('load', function() {
+                console.log("if load!");
+                var ifObserver = new MutationObserver(function(mutations) {
+                 console.log("ifObserver!");
+                 //var hifEl=querySelector(".hiddenIframe");
+                 if(hifEl){ console.log("hifEl!");
+                  var emEl=hifEl.querySelector(".email");
+                  if(emEl){ console.log("emEl!"); }  
+                 }
+                });
+                ifObserver.observe(ifEl.contentDocument.body, { attributes: true, childList: true, characterData: true,subtree: true});
+              });
+
+
+            }
+            // show all
+            var coEl=ssntEl.parentNode.querySelector(".sendToMailTemplatesContainer");
+            if(!coEl){console.error('!sendToMailTemplatesContainer');return;}
+            var email='hero@hero.com';
+            var html=''
+            for(var i=0;i<mailTemplates.length;i++){
+              html+='<a href="mailto:'+email+'">'+mailTemplates[i].name
+                   +'</a>'
+            }
+            coEl.innerHTML=html;
+            
+            ssntEl.classList.remove('showAll');
+            ssntEl.classList.add('hideAll');
+          }
+          else{
+            var coEl=ssntEl.parentNode.querySelector(".sendToMailTemplatesContainer");
+            var html=''
+            coEl.innerHTML="";
+            // hide
+            ssntEl.classList.remove('hideAll');
+            ssntEl.classList.add('showAll');
+          }
+
+        }
+      }
+
       console.log('!!!.dealMailToContainer 111');
+
+
+
       }
 
      }
@@ -82,6 +169,7 @@ const templateBody =
 html+='<div class="mailTemplatesList">';
 
        for(var i=0;i<mailTemplates.length;i++){
+/*        
        var topic;
        if(mailTemplates[i].topic.length>20){topic=mailTemplates[i].topic.substring(0,20)+"..";}
        else topic=mailTemplates[i].topic;
@@ -89,10 +177,15 @@ html+='<div class="mailTemplatesList">';
        var body;
        if(mailTemplates[i].body.length>30){body=mailTemplates[i].body.substring(0,30)+"..";}
        else body=mailTemplates[i].body;
+*/
+       var name;
+       if(mailTemplates[i].name.length>30){name=mailTemplates[i].name.substring(0,30)+"..";}
+       else name=mailTemplates[i].name;
 
 html+='<div class="mailTemplateWidget">'
         +'<div class="mailTemplateViewContainer">'
-           +'<div class="mailTemplateViewTopic">'+topic+' - '+body+'</div>'
+//           +'<div class="mailTemplateViewTopic">'+topic+' - '+body+'</div>'
+           +'<div class="mailTemplateViewTopic">'+name+'</div>'
             +'<div class="hoverContainer"><a class="gwt-Anchor">Modify</a>'
                 +'<div style="clear:both"></div>'
             +'</div>'
