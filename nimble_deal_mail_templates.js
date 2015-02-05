@@ -3,8 +3,11 @@
 Nimble deal mailto with templates addon: 
 
 1) возможность в настройках системы (Settings -> Deals) задать список шаблонов писем:
-2) возможность со страницы сделки выбрать один из шаблонов - при выборе должен открыться почтовый клиент с предзаполненным получателем (контактное лицо) и темой и содержимым из шаблона (то есть при клике открывать ссылку типа mailto:, в которой прописаны все составляющие части письма)
-3) в шаблонах должна быть возможность подставлять в заданные места данные из системы - для начала, название сделки, сумму сделки и имя контакта
+2) возможность со страницы сделки выбрать один из шаблонов - при выборе должен открыться почтовый клиент с 
+предзаполненным получателем (контактное лицо) и темой и содержимым из шаблона 
+(то есть при клике открывать ссылку типа mailto:, в которой прописаны все составляющие части письма)
+3) в шаблонах должна быть возможность подставлять в заданные места данные из системы - для начала, 
+название сделки, сумму сделки и имя контакта
 
 
 */
@@ -22,67 +25,107 @@ function init() {
 
 
   var mailTemplates=[
-    {name:"Hello template",subject:"Hello $contact",body:"Dear $contact!"},
-    {name:"Bye template",subject:"Bye $contact",body:"Dear $contact!  Bye! See you on Monday.\n\r"},
-    {name:"Ping template",subject:"Ping $contact",body:"Dear $contact! Pinging $contact. "}
+    {
+      name:"Hello template",
+      subject:"Hello $contact",
+      body:'Dear $contact!\r\n\r\n'
+       +'Thanks for subscribing super CRM.\r\n'
+       +'We are so glad that you are now member of community.\r\n' 
+       +'Please feel free to revert to us if you need any assistance.\r\n\r\n'
+       +'Regards,\r\n'
+       +'$user '
+    },
+    {
+      name:"Bye template",
+      subject:"Bye $contact",
+      body:'Dear $contact!\r\n\r\n'
+       +'Thanks for subscribing super CRM.\r\n'
+       +'We are so glad that you are now member of community.\r\n' 
+       +'Please feel free to revert to us if you need any assistance.\r\n\r\n'
+       +'Regards,\r\n'
+       +'$user '
+    },
+    {
+      name:"Ping template",
+      subject:"Ping $contact",
+      body:'Dear $contact!\r\n\r\n'
+       +'Please feel free to revert to us if you need any assistance.\r\n\r\n'
+       +'Regards,\r\n'
+       +'$user '
+    }
   ];
 
 
- // templatize("Welcome $uesr, your email is $email!",{"$user":"vova","$email":"vova@vova.com"})
+ // templatize("Welcome $user\r\n\r\n, your email is $email!\r\n",{"$user":"vova","$email":"vova@vova.com"})
 function templatize(s,t)
 {   
    for (var p in t) { s=s.split(p).join(t[p]); }
    return s;
 }
 
+const templateName = 
+        'Hello mail';
+
+const templateSubject = 
+        'Hello $contact!';
+
 const templateBody = 
-        'Dear $customer!\r\n\r\n'
+        'Dear $contact!\r\n\r\n'
        +'Thanks for subscribing super CRM.\r\n'
        +'We are so glad that you are now member of community.\r\n' 
        +'Please feel free to revert to us if you need any assistance.\r\n\r\n'
        +'Regards,\r\n'
        +'$user ';
 
+const addtemplateTemplate = 
+    {
+      name:templateName,
+      subject:templateSubject,
+      body:templateBody
+    };
+
+
+
 function httpGet(url, cbOk, cbErr){
-var xhr = new XMLHttpRequest();
-xhr.open('GET', encodeURI(url));
-xhr.onload = function() {
+ var xhr = new XMLHttpRequest();
+ xhr.open('GET', encodeURI(url));
+ xhr.onload = function() {
     if (xhr.status === 200) {
         if(cbOk)cbOk(xhr.responseText);
     }
     else {
         if(cbErr)cbErr(xhr.status);
     }
-};
-xhr.send();
+ };
+ xhr.send();
 }
 
-
+  const storagePrefix="deal_mail_templates_";
 
   function saveToStorage(id){
-   localStorage.setItem(id,JSON.stringify(mailTemplates));
+   console.log("saveToStorage",mailTemplates,storagePrefix+id); 
+   localStorage.setItem(storagePrefix+id,JSON.stringify(mailTemplates));
   }
 
   function readFromStorage(id){
-   var item=localStorage.getItem(id);
-   if(item){
-    mailTemplates=JSON.parse(item); 
-   }
+   var item=localStorage.getItem(storagePrefix+id);
+   if(item){ mailTemplates=JSON.parse(item); }
+   console.log("readFromStorage",mailTemplates,storagePrefix+id); 
   }
 
-  function prepareMailToData(url){
-    httpGet(url,
-      function(text){
-        console.log(text);
-        //text.find("<a href="mailto:care@nimble.com">care@</a>")
-      },
-      function(err){console.error(err);}
-      );
-  }
+
+//  function prepareMailToData(url){
+//    httpGet(url,
+//      function(text){
+//        console.log(text);
+//        //text.find("<a href="mailto:care@nimble.com">care@</a>")
+//      },
+//      function(err){console.error(err);}
+//      );
+//  }
 
 
   function HackDealEmail(){
-
             var rtEl=dmtocEl.parentNode.querySelector("a.relatedTo");
             if(rtEl){
               taistApi.log("a.relatedTo",rtEl);
@@ -113,7 +156,7 @@ xhr.send();
                       //console.log("!!!----------email-----------!!!");
                       var aEl=emailEl.querySelector("a");
                       if(aEl){
-                       hackEmail=aEl.href;
+                       hackEmail=aEl.href.split(':')[1];
                        console.log("hackEmail",hackEmail);
                       }
                       ifmainObserver.disconnect();
@@ -173,7 +216,7 @@ xhr.send();
             // email
             var email='hero@hero.com'; if(hackEmail.length>0){email=hackEmail;}
             // deal
-	    var deal='deal'; 
+	          var deal='deal'; 
             var dealEl=document.querySelector('.dealMainFieldTitle.name');
             if(dealEl){deal=dealEl.innerHTML;}
             // contact
@@ -218,13 +261,13 @@ xhr.send();
   }
 
   function rebuildTemplates(sdvEl){
-    //var  sdvEl = document.querySelector(".SettingsDealsView");
+    
     console.log('rebuildTemplates()',sdvEl);
     if(sdvEl){
-    if (!document.querySelector(".dealMailTemplatesContainer")){
+     if (!document.querySelector(".dealMailTemplatesContainer")){
 
       var userId=document.querySelector("a.userName");
-      if(userId)readFromStorage(userId+"_deal_mail_templates");
+      if(userId)readFromStorage(userId);
 
       dmtcEl = document.createElement("div");
       dmtcEl.setAttribute('class', 'dealMailTemplatesContainer');
@@ -233,7 +276,7 @@ xhr.send();
 
       if(mailTemplates && mailTemplates.length>0){
 
-html+='<div class="mailTemplatesList">';
+       html+='<div class="mailTemplatesList">';
 
        for(var i=0;i<mailTemplates.length;i++){
 /*        
@@ -249,20 +292,19 @@ html+='<div class="mailTemplatesList">';
        if(mailTemplates[i].name.length>30){name=mailTemplates[i].name.substring(0,30)+"..";}
        else name=mailTemplates[i].name;
 
-html+='<div class="mailTemplateWidget">'
+       html+='<div class="mailTemplateWidget" templateindex='+i+'>'
         +'<div class="mailTemplateViewContainer">'
 //           +'<div class="mailTemplateViewTopic">'+topic+' - '+body+'</div>'
            +'<div class="mailTemplateViewTopic">'+name+'</div>'
-            +'<div class="hoverContainer"><a class="gwt-Anchor">Modify</a>'
+            +'<div class="hoverContainer"><a class="gwt-Anchor modify-Mail-Template">Modify</a>'
                 +'<div style="clear:both"></div>'
             +'</div>'
             +'<div style="clear:both"></div>'
-        +'</div>'
-        +'<div class="gwt-Label-error" aria-hidden="true" style="display: none;"></div>'
-    +'</div>';
-	}
-
-	html+='</div><div style="clear:both"></div>';
+         +'</div>'
+         +'<div class="gwt-Label-error" aria-hidden="true" style="display: none;"></div>'
+        +'</div>';
+	     }
+	     html+='</div><div style="clear:both"></div>';
       }
 
 
@@ -270,9 +312,13 @@ html+='<div class="mailTemplateWidget">'
 
        +'<div style="clear:both;height:1px">&nbsp;</div>'
 
-      +'<div class="ModifyMailTemplateView" style="display: none;">'
+      +'<div class="ModifyMailTemplateView" style="display: none;" templateindex=0>'
+       +'<div class="mailTemlateNameView">'
+        +'<div class="mail-temlate-label">Name:&nbsp;</div>'
+        +'<input class="nmbl-AdvancedTextBox" type="text" maxlength="90"></br>'
+       +'</div>'
        +'<div class="mailTemlateTopicView">'
-        +'<div class="mail-temlate-label">Mail topic:&nbsp;</div>'
+        +'<div class="mail-temlate-label">Subject:&nbsp;</div>'
         +'<input class="nmbl-AdvancedTextBox" type="text" maxlength="90"></br>'
        +'</div>'
       //+'<div class="mail-temlate-label">Body:</div>' 
@@ -284,7 +330,7 @@ html+='<div class="mailTemplateWidget">'
        +'<a class="gwt-Anchor save-Mail-Template">Save</a>&nbsp;&nbsp;'
        +'<a class="gwt-Anchor cancel-Mail-Template">Cancel</a>'
        +'<a class="gwt-Anchor delete-Mail-Template">Delete</a>'
-      +'</div>'
+      +'</div>'   
 
        +'<div style="clear:both;"></div>'
       +'</div>' // ModifyMailTemplateView
@@ -298,6 +344,36 @@ html+='<div class="mailTemplateWidget">'
 
       sdvEl.appendChild(dmtcEl);
 
+// Modify Template
+
+      var mtEls=dmtcEl.querySelectorAll("a.modify-Mail-Template");
+      if(mtEls){
+        for(var i=0;i<mtEls.length;i++){
+          (function(i){ 
+          mtEls[i].onclick=function(){
+           taistApi.log("mtEls[i].onclick",i);
+        
+           var mmtvEl=dmtcEl.querySelector(".ModifyMailTemplateView");           
+           var atEl=dmtcEl.querySelector("a.add-Mail-Template");
+           if(mmtvEl && atEl){
+            mmtvEl.templateindex=i;
+            var nameEl=mmtvEl.querySelector(".mailTemlateNameView .nmbl-AdvancedTextBox");
+            var subjEl=mmtvEl.querySelector(".mailTemlateTopicView .nmbl-AdvancedTextBox");
+            var bodyEl=mmtvEl.querySelector(".nmbl-AdvancedTextArea");
+            if(nameEl)nameEl.value=mailTemplates[i].name;
+            if(subjEl)subjEl.value=mailTemplates[i].subject;
+            if(bodyEl)bodyEl.value=mailTemplates[i].body;
+            mmtvEl.style.display='block';
+            atEl.style.display='none';
+            var svEl=dmtcEl.querySelector("a.save-Mail-Template");
+            if(svEl){svEl.scrollIntoView();}
+           }
+
+          }
+         })(i);
+        } // for  
+        taistApi.log("a.modify-Mail-Template");
+      } // if
       
 
 // Add Template
@@ -305,9 +381,28 @@ html+='<div class="mailTemplateWidget">'
       var atEl=dmtcEl.querySelector("a.add-Mail-Template");
       if(atEl){
         atEl.onclick=function(){
-          taistApi.log("atEl.onclick");
+          taistApi.log("atEl.onclick",dmtcEl);
           var ssvEl=dmtcEl.querySelector(".ModifyMailTemplateView");
           if(ssvEl){
+
+
+           var mmtvEl=dmtcEl.querySelector(".ModifyMailTemplateView");           
+           var atEl=dmtcEl.querySelector("a.add-Mail-Template");
+           if(mmtvEl && atEl){
+            mmtvEl.templateindex=-1;
+            var nameEl=mmtvEl.querySelector(".mailTemlateNameView .nmbl-AdvancedTextBox");
+            var subjEl=mmtvEl.querySelector(".mailTemlateTopicView .nmbl-AdvancedTextBox");
+            var bodyEl=mmtvEl.querySelector(".nmbl-AdvancedTextArea");
+            if(nameEl)nameEl.value=templateName;
+            if(subjEl)subjEl.value=templateSubject;
+            if(bodyEl)bodyEl.value=templateBody;
+            mmtvEl.style.display='block';
+            atEl.style.display='none';
+            var svEl=dmtcEl.querySelector("a.save-Mail-Template");
+            if(svEl){svEl.scrollIntoView();}
+           }
+
+
             ssvEl.style.display='block';
             atEl.style.display='none';
           }
@@ -320,15 +415,77 @@ html+='<div class="mailTemplateWidget">'
       if(stEl){
         stEl.onclick=function(){
           var userId=document.querySelector("a.userName");      
-          taistApi.log("stEl.onclick");          
-          if(userId){
-            localStorage.setItem(userId, foo);
+          taistApi.log("stEl.onclick",dmtcEl);          
+          if(dmtcEl){
+          var ssvEl=dmtcEl.querySelector(".ModifyMailTemplateView");
+          if(ssvEl){
+           var mmtvEl=dmtcEl.querySelector(".ModifyMailTemplateView");           
+           var atEl=dmtcEl.querySelector("a.add-Mail-Template");
+           if(mmtvEl && atEl){
+            var i =mmtvEl.templateindex;
+            if(i==-1){
+              mailTemplates.push({});
+              i=mailTemplates.length-1;
+              console.log('mailTemplates',mailTemplates,'i',i);
+            }
+            var nameEl=mmtvEl.querySelector(".mailTemlateNameView .nmbl-AdvancedTextBox");
+            var subjEl=mmtvEl.querySelector(".mailTemlateTopicView .nmbl-AdvancedTextBox");
+            var bodyEl=mmtvEl.querySelector(".nmbl-AdvancedTextArea");
+            if(nameEl)mailTemplates[i].name=nameEl.value;
+            if(subjEl)mailTemplates[i].subject=subjEl.value;
+            if(bodyEl)mailTemplates[i].body=bodyEl.value;
+            console.log(mailTemplates[i]);
+            if(userId)saveToStorage(userId);
+            
+/*
+              // dom
+              var El = document.createElement("div");
+              El.setAttribute('class', 'mailTemplateWidget');
+              El.setAttribute('templateindex', i);
 
-          }
+              var name;
+              if(mailTemplates[i].name.length>30){name=mailTemplates[i].name.substring(0,30)+"..";}
+              else name=mailTemplates[i].name;
+
+              var html=
+         '<div class="mailTemplateViewContainer">'
+           +'<div class="mailTemplateViewTopic">'+name+'</div>'
+            +'<div class="hoverContainer"><a class="gwt-Anchor modify-Mail-Template">Modify</a>'
+                +'<div style="clear:both"></div>'
+            +'</div>'
+            +'<div style="clear:both"></div>'
+         +'</div>'
+         +'<div class="gwt-Label-error" aria-hidden="true" style="display: none;"></div>'
+        
+              El.innerHTML=html;
+              mtlEl=dmtcEl.querySelector(".mailTemplatesList");
+              if(mtlEl)mtlEl.appendChild(El);
+ */
+
+              // rebuild dom
+             var SettingsDealsView = document.querySelector(".SettingsDealsView");
+             if(SettingsDealsView){
+              var el=document.querySelector(".dealMailTemplatesContainer");
+              if(el){
+               el.remove();
+               rebuildTemplates(SettingsDealsView);
+               var atEl=dmtcEl.querySelector("a.add-Mail-Template");
+               if(atEl){
+                atEl.scrollIntoView();
+               }
+
+              } 
+              return; // why?
+             }
+           
+
+            }
           var ssvEl=dmtcEl.querySelector(".ModifyMailTemplateView");
           if(ssvEl){ssvEl.style.display='none';}
           var atEl=dmtcEl.querySelector("a.add-Mail-Template");
           if(atEl){atEl.style.display='block';}
+          }
+         }
         }
         taistApi.log("a.save-Mail-Template");
       }
@@ -338,7 +495,7 @@ html+='<div class="mailTemplateWidget">'
       var ctEl=dmtcEl.querySelector("a.cancel-Mail-Template");
       if(ctEl){
         ctEl.onclick=function(){
-          taistApi.log("ctEl.onclick");
+          taistApi.log("ctEl.onclick",dmtcEl);
           var ssvEl=dmtcEl.querySelector(".ModifyMailTemplateView");
           if(ssvEl){ssvEl.style.display='none';}
           var atEl=dmtcEl.querySelector("a.add-Mail-Template");
@@ -346,6 +503,48 @@ html+='<div class="mailTemplateWidget">'
         }
         taistApi.log("a.cancel-Mail-Template");
       }
+
+// Delete template
+      var dtEl=dmtcEl.querySelector("a.delete-Mail-Template");
+      if(dtEl){
+        dtEl.onclick=function(){
+          taistApi.log("dtEl.onclick",dmtcEl);
+          var userId=document.querySelector("a.userName");
+          if(dmtcEl){
+          var ssvEl=dmtcEl.querySelector(".ModifyMailTemplateView");
+          if(ssvEl){
+            if(ssvEl.templateindex!="undefined"){
+             var i=ssvEl.templateindex;
+             mailTemplates.splice(i, 1);
+             if(userId)saveToStorage(userId);
+             console.log("delete template",i);
+             // rebuild dom
+             var SettingsDealsView = document.querySelector(".SettingsDealsView");
+             if(SettingsDealsView){
+              var el=document.querySelector(".dealMailTemplatesContainer");
+              if(el){
+               el.remove();
+               rebuildTemplates(SettingsDealsView);
+               var atEl=dmtcEl.querySelector("a.add-Mail-Template");
+               if(atEl){
+                atEl.scrollIntoView();
+               }
+
+              } 
+              return; // why?
+             }
+            }     
+
+            ssvEl.style.display='none';
+          }
+          var atEl=dmtcEl.querySelector("a.add-Mail-Template");
+          if(atEl){atEl.style.display='block';}
+        }
+        }
+        taistApi.log("a.delete-Mail-Template");
+      }
+
+
 
     }
   }
