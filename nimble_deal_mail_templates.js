@@ -1,3 +1,14 @@
+/*
+
+Nimble deal mailto with templates addon: 
+
+1) возможность в настройках системы (Settings -> Deals) задать список шаблонов писем:
+2) возможность со страницы сделки выбрать один из шаблонов - при выборе должен открыться почтовый клиент с предзаполненным получателем (контактное лицо) и темой и содержимым из шаблона (то есть при клике открывать ссылку типа mailto:, в которой прописаны все составляющие части письма)
+3) в шаблонах должна быть возможность подставлять в заданные места данные из системы - для начала, название сделки, сумму сделки и имя контакта
+
+
+*/
+
 function init() {
   var taistApi;
   
@@ -11,19 +22,26 @@ function init() {
 
 
   var mailTemplates=[
-    {name:"template1",subject:"Hello $contacts-lastname$ log name topic template aa s s s df sd fsd fs df sd f sd fs d fs df s df s dffdf end",body:"Dear $contacts-lastname$!"},
-    {name:"template2",subject:"Bye $contacts-lastname$",body:"Dear $contacts-lastname$!  as da sd a sd a sd as d as da sd a sd a s da sd a sd as d"},
-    {name:"template3",subject:"Ping $contacts-lastname$",body:"Dear $contacts-lastname$!"}
+    {name:"Hello template",subject:"Hello $contact",body:"Dear $contact!"},
+    {name:"Bye template",subject:"Bye $contact",body:"Dear $contact!  Bye! See you on Monday.\n\r"},
+    {name:"Ping template",subject:"Ping $contact",body:"Dear $contact! Pinging $contact. "}
   ];
 
 
+ // templatize("Welcome $uesr, your email is $email!",{"$user":"vova","$email":"vova@vova.com"})
+function templatize(s,t)
+{   
+   for (var p in t) { s=s.split(p).join(t[p]); }
+   return s;
+}
+
 const templateBody = 
-        'Dear $contacts-lastname$!\r\n\r\n'
+        'Dear $customer!\r\n\r\n'
        +'Thanks for subscribing super CRM.\r\n'
        +'We are so glad that you are now member of community.\r\n' 
        +'Please feel free to revert to us if you need any assistance.\r\n\r\n'
        +'Regards,\r\n'
-       +'$username$ ';
+       +'$user ';
 
 function httpGet(url, cbOk, cbErr){
 var xhr = new XMLHttpRequest();
@@ -152,15 +170,28 @@ xhr.send();
             // show all
             var coEl=ssntEl.parentNode.querySelector(".sendToMailTemplatesContainer");
             if(!coEl){console.error('!sendToMailTemplatesContainer');return;}
-            var email='hero@hero.com';
+            // email
+            var email='hero@hero.com'; if(hackEmail.length>0){email=hackEmail;}
+            // deal
+	    var deal='deal'; 
+            var dealEl=document.querySelector('.dealMainFieldTitle.name');
+            if(dealEl){deal=dealEl.innerHTML;}
+            // contact
+            var contact='contact';
+            var rtEl=dmtocEl.parentNode.querySelector("a.relatedTo");
+            if(rtEl){contact=rtEl.innerHTML;}
+
             if(hackEmail.length>0){email=hackEmail;}
 
             //<a href=”mailto:obama@whitehouse.gov?subject=Congrats%20Obama&body=Enjoy%20your%20stay%0ARegards%20″>
 
 
             var html=''
+            var templateParams={"$deal":deal,"$contact":contact};
             for(var i=0;i<mailTemplates.length;i++){
-              html+='<a href="mailto:'+email+'?subject='+escape(mailTemplates[i].subject)+'&body='+escape(mailTemplates[i].body)+'">'+mailTemplates[i].name +'</a></br>'
+              var subject=templatize(mailTemplates[i].subject,templateParams);
+              var body=templatize(mailTemplates[i].body,templateParams);
+              html+='<a href="mailto:'+email+'?subject='+escape(subject)+'&body='+escape(body)+'">'+mailTemplates[i].name +'</a></br>'
             }
             coEl.innerHTML=html;
             
