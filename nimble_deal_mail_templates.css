@@ -22,8 +22,8 @@ margin-top: 5px;
 }
 
 .ModifyMailTemplateView .nmbl-AdvancedTextBox {
-padding: 0px 3px 3px 3px;
-width: 415px;
+padding: 3px 3px 3px 3px;
+width: 425px;
 }
 
 .ModifyMailTemplateView .nmbl-AdvancedTextArea {
@@ -62,8 +62,13 @@ padding: 0 10px;
 }
 
 
-.mailTemplateWidget .mailTemplateViewContainer{
+.mailTemplateWidget .mailTemplateViewContainer {
 padding: 15px 0;
+}
+
+.dealMailTemplatesContainer .mailTemplatesList {
+overflow-y:auto;
+max-height:320px;
 }
 
 

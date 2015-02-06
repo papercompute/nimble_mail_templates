@@ -103,14 +103,16 @@ function httpGet(url, cbOk, cbErr){
   const storagePrefix="deal_mail_templates_";
 
   function saveToStorage(id){
-   console.log("saveToStorage",mailTemplates,storagePrefix+id); 
-   localStorage.setItem(storagePrefix+id,JSON.stringify(mailTemplates));
+   var key = storagePrefix+escape(id);
+   //console.log("saveToStorage",mailTemplates,key); 
+   localStorage.setItem(key,JSON.stringify(mailTemplates));
   }
 
   function readFromStorage(id){
-   var item=localStorage.getItem(storagePrefix+id);
+   var key = storagePrefix+escape(id);
+   var item=localStorage.getItem(key);
    if(item){ mailTemplates=JSON.parse(item); }
-   console.log("readFromStorage",mailTemplates,storagePrefix+id); 
+   //console.log("readFromStorage",mailTemplates,key); 
   }
 
 
@@ -124,6 +126,7 @@ function httpGet(url, cbOk, cbErr){
 //      );
 //  }
 
+const observeConfig = { attributes: true, childList: true, characterData: true, subtree: true};
 
   function HackDealEmail(){
             var rtEl=dmtocEl.parentNode.querySelector("a.relatedTo");
@@ -163,16 +166,16 @@ function httpGet(url, cbOk, cbErr){
                      }
                      
                    });
-                   ifmainObserver.observe(hifmainEl, { attributes: true, childList: true, characterData: true,subtree: true});
+                   ifmainObserver.observe(hifmainEl, observeConfig);
                    ifbodyObserver.disconnect();
                   }  
                  }
                 });
-                ifbodyObserver.observe(hifEl.contentDocument.body, { attributes: true, childList: true, characterData: true,subtree: true});
+                ifbodyObserver.observe(hifEl.contentDocument.body, observeConfig);
               });
               } // if href  
               });// relatedtoObserver
-              relatedtoObserver.observe(rtEl, { attributes: true, childList: true, characterData: true,subtree: true}); 
+              relatedtoObserver.observe(rtEl, observeConfig); 
             }
   }
 
@@ -216,9 +219,13 @@ function httpGet(url, cbOk, cbErr){
             // email
             var email='hero@hero.com'; if(hackEmail.length>0){email=hackEmail;}
             // deal
-	          var deal='deal'; 
+	    var deal='deal'; 
             var dealEl=document.querySelector('.dealMainFieldTitle.name');
             if(dealEl){deal=dealEl.innerHTML;}
+            // user
+	    var user='user'; 
+            var userEl=document.querySelector("a.userName");
+            if(userEl){user=userEl.innerHTML;}
             // contact
             var contact='contact';
             var rtEl=dmtocEl.parentNode.querySelector("a.relatedTo");
@@ -230,7 +237,7 @@ function httpGet(url, cbOk, cbErr){
 
 
             var html=''
-            var templateParams={"$deal":deal,"$contact":contact};
+            var templateParams={"$deal":deal,"$contact":contact,"$user":user};
             for(var i=0;i<mailTemplates.length;i++){
               var subject=templatize(mailTemplates[i].subject,templateParams);
               var body=templatize(mailTemplates[i].body,templateParams);
@@ -267,7 +274,7 @@ function httpGet(url, cbOk, cbErr){
      if (!document.querySelector(".dealMailTemplatesContainer")){
 
       var userId=document.querySelector("a.userName");
-      if(userId)readFromStorage(userId);
+      if(userId)readFromStorage(userId.innerText);
 
       dmtcEl = document.createElement("div");
       dmtcEl.setAttribute('class', 'dealMailTemplatesContainer');
@@ -314,7 +321,7 @@ function httpGet(url, cbOk, cbErr){
 
       +'<div class="ModifyMailTemplateView" style="display: none;" templateindex=0>'
        +'<div class="mailTemlateNameView">'
-        +'<div class="mail-temlate-label">Name:&nbsp;</div>'
+        +'<div class="mail-temlate-label">Name:&nbsp;&nbsp;&nbsp;&nbsp;</div>'
         +'<input class="nmbl-AdvancedTextBox" type="text" maxlength="90"></br>'
        +'</div>'
        +'<div class="mailTemlateTopicView">'
@@ -345,13 +352,12 @@ function httpGet(url, cbOk, cbErr){
       sdvEl.appendChild(dmtcEl);
 
 // Modify Template
-
       var mtEls=dmtcEl.querySelectorAll("a.modify-Mail-Template");
       if(mtEls){
         for(var i=0;i<mtEls.length;i++){
           (function(i){ 
           mtEls[i].onclick=function(){
-           taistApi.log("mtEls[i].onclick",i);
+           //taistApi.log("mtEls[i].onclick",i);
         
            var mmtvEl=dmtcEl.querySelector(".ModifyMailTemplateView");           
            var atEl=dmtcEl.querySelector("a.add-Mail-Template");
@@ -372,19 +378,17 @@ function httpGet(url, cbOk, cbErr){
           }
          })(i);
         } // for  
-        taistApi.log("a.modify-Mail-Template");
+        //taistApi.log("a.modify-Mail-Template");
       } // if
       
 
 // Add Template
-
       var atEl=dmtcEl.querySelector("a.add-Mail-Template");
       if(atEl){
         atEl.onclick=function(){
-          taistApi.log("atEl.onclick",dmtcEl);
+          //taistApi.log("atEl.onclick",dmtcEl);
           var ssvEl=dmtcEl.querySelector(".ModifyMailTemplateView");
           if(ssvEl){
-
 
            var mmtvEl=dmtcEl.querySelector(".ModifyMailTemplateView");           
            var atEl=dmtcEl.querySelector("a.add-Mail-Template");
@@ -400,6 +404,7 @@ function httpGet(url, cbOk, cbErr){
             atEl.style.display='none';
             var svEl=dmtcEl.querySelector("a.save-Mail-Template");
             if(svEl){svEl.scrollIntoView();}
+            var dtEl=dmtcEl.querySelector("a.delete-Mail-Template"); 
            }
 
 
@@ -407,7 +412,7 @@ function httpGet(url, cbOk, cbErr){
             atEl.style.display='none';
           }
         }
-        taistApi.log("a.add-Mail-Template");
+        //taistApi.log("a.add-Mail-Template");
       }
 
 // Save template
@@ -415,7 +420,7 @@ function httpGet(url, cbOk, cbErr){
       if(stEl){
         stEl.onclick=function(){
           var userId=document.querySelector("a.userName");      
-          taistApi.log("stEl.onclick",dmtcEl);          
+          //taistApi.log("stEl.onclick",dmtcEl);          
           if(dmtcEl){
           var ssvEl=dmtcEl.querySelector(".ModifyMailTemplateView");
           if(ssvEl){
@@ -426,7 +431,7 @@ function httpGet(url, cbOk, cbErr){
             if(i==-1){
               mailTemplates.push({});
               i=mailTemplates.length-1;
-              console.log('mailTemplates',mailTemplates,'i',i);
+              //console.log('mailTemplates',mailTemplates,'i',i);
             }
             var nameEl=mmtvEl.querySelector(".mailTemlateNameView .nmbl-AdvancedTextBox");
             var subjEl=mmtvEl.querySelector(".mailTemlateTopicView .nmbl-AdvancedTextBox");
@@ -434,34 +439,8 @@ function httpGet(url, cbOk, cbErr){
             if(nameEl)mailTemplates[i].name=nameEl.value;
             if(subjEl)mailTemplates[i].subject=subjEl.value;
             if(bodyEl)mailTemplates[i].body=bodyEl.value;
-            console.log(mailTemplates[i]);
-            if(userId)saveToStorage(userId);
-            
-/*
-              // dom
-              var El = document.createElement("div");
-              El.setAttribute('class', 'mailTemplateWidget');
-              El.setAttribute('templateindex', i);
-
-              var name;
-              if(mailTemplates[i].name.length>30){name=mailTemplates[i].name.substring(0,30)+"..";}
-              else name=mailTemplates[i].name;
-
-              var html=
-         '<div class="mailTemplateViewContainer">'
-           +'<div class="mailTemplateViewTopic">'+name+'</div>'
-            +'<div class="hoverContainer"><a class="gwt-Anchor modify-Mail-Template">Modify</a>'
-                +'<div style="clear:both"></div>'
-            +'</div>'
-            +'<div style="clear:both"></div>'
-         +'</div>'
-         +'<div class="gwt-Label-error" aria-hidden="true" style="display: none;"></div>'
-        
-              El.innerHTML=html;
-              mtlEl=dmtcEl.querySelector(".mailTemplatesList");
-              if(mtlEl)mtlEl.appendChild(El);
- */
-
+            //console.log(mailTemplates[i]);
+            if(userId)saveToStorage(userId.innerText);
               // rebuild dom
              var SettingsDealsView = document.querySelector(".SettingsDealsView");
              if(SettingsDealsView){
@@ -477,7 +456,6 @@ function httpGet(url, cbOk, cbErr){
               } 
               return; // why?
              }
-           
 
             }
           var ssvEl=dmtcEl.querySelector(".ModifyMailTemplateView");
@@ -487,7 +465,7 @@ function httpGet(url, cbOk, cbErr){
           }
          }
         }
-        taistApi.log("a.save-Mail-Template");
+        //taistApi.log("a.save-Mail-Template");
       }
 
 
@@ -495,29 +473,33 @@ function httpGet(url, cbOk, cbErr){
       var ctEl=dmtcEl.querySelector("a.cancel-Mail-Template");
       if(ctEl){
         ctEl.onclick=function(){
-          taistApi.log("ctEl.onclick",dmtcEl);
+          //taistApi.log("ctEl.onclick",dmtcEl);
           var ssvEl=dmtcEl.querySelector(".ModifyMailTemplateView");
           if(ssvEl){ssvEl.style.display='none';}
           var atEl=dmtcEl.querySelector("a.add-Mail-Template");
           if(atEl){atEl.style.display='block';}
         }
-        taistApi.log("a.cancel-Mail-Template");
+        //taistApi.log("a.cancel-Mail-Template");
       }
 
 // Delete template
       var dtEl=dmtcEl.querySelector("a.delete-Mail-Template");
       if(dtEl){
         dtEl.onclick=function(){
-          taistApi.log("dtEl.onclick",dmtcEl);
+          //taistApi.log("dtEl.onclick",dmtcEl);
           var userId=document.querySelector("a.userName");
+          //console.log("Delete template userId",userId.innerHTML);
           if(dmtcEl){
           var ssvEl=dmtcEl.querySelector(".ModifyMailTemplateView");
           if(ssvEl){
-            if(ssvEl.templateindex!="undefined"){
+            //console.log("Delete template",ssvEl.templateindex);
+            if(ssvEl.templateindex!='undefined' || ssvEl.templateindex!=null){
              var i=ssvEl.templateindex;
+             if(i>=0 && i<mailTemplates.length){
+             //console.log("Delete template i",i);
              mailTemplates.splice(i, 1);
-             if(userId)saveToStorage(userId);
-             console.log("delete template",i);
+             if(userId){saveToStorage(userId.innerText);};
+             //console.log("delete template",i);
              // rebuild dom
              var SettingsDealsView = document.querySelector(".SettingsDealsView");
              if(SettingsDealsView){
@@ -529,19 +511,19 @@ function httpGet(url, cbOk, cbErr){
                if(atEl){
                 atEl.scrollIntoView();
                }
-
               } 
               return; // why?
-             }
-            }     
+             }//
+             }//i
+            }//templateIndex    
 
             ssvEl.style.display='none';
-          }
+          }//eevEl
           var atEl=dmtcEl.querySelector("a.add-Mail-Template");
           if(atEl){atEl.style.display='block';}
+        }//
         }
-        }
-        taistApi.log("a.delete-Mail-Template");
+        //taistApi.log("a.delete-Mail-Template");
       }
 
 
