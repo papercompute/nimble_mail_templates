@@ -59,11 +59,6 @@ function init() {
 
 
 var mailTemplatesUpdated = 0;
-
-Object.observe(mailTemplates, function(changes) {
-  console.log("mailTemplates observe");
-  mailTemplatesUpdated++;
-});
  
 
 
@@ -117,6 +112,7 @@ function httpGet(url, cbOk, cbErr){
    var key = storagePrefix+escape(id);
    console.log("saveToStorage",mailTemplates,key); 
    localStorage.setItem(key,JSON.stringify(mailTemplates));
+   mailTemplatesUpdated++;
   }
 
   function readFromStorage(id){
