@@ -21,39 +21,50 @@ function init() {
   var ssntEl=null;
   var ifEl=null;
   var hifmainEl=null;
+
   var hackEmail="";
+  var hackUserName="";
 
 
   var mailTemplates=[
     {
       name:"Hello template",
       subject:"Hello $contact",
-      body:'Dear $contact!\r\n\r\n'
-       +'Thanks for subscribing super CRM.\r\n'
-       +'We are so glad that you are now member of community.\r\n' 
-       +'Please feel free to revert to us if you need any assistance.\r\n\r\n'
-       +'Regards,\r\n'
-       +'$user '
+      body:'Dear $contact!\n\n'
+       +'Make $dealName $dealAmount.\n'
+       +'We are so glad that you are now member of community.\n' 
+       +'Please feel free to revert to us if you need any assistance.\n\n'
+       +'Regards,\n'
+       +'$userName '
     },
     {
-      name:"Bye template",
-      subject:"Bye $contact",
-      body:'Dear $contact!\r\n\r\n'
-       +'Thanks for subscribing super CRM.\r\n'
-       +'We are so glad that you are now member of community.\r\n' 
-       +'Please feel free to revert to us if you need any assistance.\r\n\r\n'
-       +'Regards,\r\n'
-       +'$user '
+      name:"Make deal template",
+      subject:"Make deal $contact",
+      body:'Dear $contact!\n\n'
+       +'Make $dealName $dealAmount.\n'
+       +'We are so glad that you are now member of community.\n' 
+       +'Please feel free to revert to us if you need any assistance.\n\n'
+       +'Regards,\n'
+       +'$userName '
     },
     {
       name:"Ping template",
       subject:"Ping $contact",
-      body:'Dear $contact!\r\n\r\n'
-       +'Please feel free to revert to us if you need any assistance.\r\n\r\n'
-       +'Regards,\r\n'
-       +'$user '
+      body:'Dear $contact!\n\n'
+       +'Please feel free to revert to us if you need any assistance.\n\n'
+       +'Regards,\n'
+       +'$userName '
     }
   ];
+
+
+var mailTemplatesUpdated = 0;
+
+Object.observe(mailTemplates, function(changes) {
+  console.log("mailTemplates observe");
+  mailTemplatesUpdated++;
+});
+ 
 
 
  // templatize("Welcome $user\r\n\r\n, your email is $email!\r\n",{"$user":"vova","$email":"vova@vova.com"})
@@ -75,7 +86,7 @@ const templateBody =
        +'We are so glad that you are now member of community.\r\n' 
        +'Please feel free to revert to us if you need any assistance.\r\n\r\n'
        +'Regards,\r\n'
-       +'$user ';
+       +'$userName ';
 
 const addtemplateTemplate = 
     {
@@ -104,7 +115,7 @@ function httpGet(url, cbOk, cbErr){
 
   function saveToStorage(id){
    var key = storagePrefix+escape(id);
-   //console.log("saveToStorage",mailTemplates,key); 
+   console.log("saveToStorage",mailTemplates,key); 
    localStorage.setItem(key,JSON.stringify(mailTemplates));
   }
 
@@ -112,9 +123,19 @@ function httpGet(url, cbOk, cbErr){
    var key = storagePrefix+escape(id);
    var item=localStorage.getItem(key);
    if(item){ mailTemplates=JSON.parse(item); }
-   //console.log("readFromStorage",mailTemplates,key); 
+   console.log("readFromStorage",mailTemplates,key); 
   }
 
+
+ function userNameChanged(userNameEl) 
+ {
+   if(userNameEl.innerText.length>0 && userNameEl.innerText!=hackUserName)
+   {
+     hackUserName=userNameEl.innerText;
+     console.log("userNameChanged",hackUserName); 
+     readFromStorage(hackUserName);
+   }
+ }
 
 //  function prepareMailToData(url){
 //    httpGet(url,
@@ -204,7 +225,7 @@ const observeConfig = { attributes: true, childList: true, characterData: true, 
       dmtocEl.innerHTML=html;
       giEl.appendChild(dmtocEl);
 
-      HackDealEmail();
+     // HackDealEmail();
 
       ssntEl=dmtocEl.querySelector("a.showSendMailTemplates");
       if(ssntEl){
@@ -217,27 +238,29 @@ const observeConfig = { attributes: true, childList: true, characterData: true, 
             var coEl=ssntEl.parentNode.querySelector(".sendToMailTemplatesContainer");
             if(!coEl){console.error('!sendToMailTemplatesContainer');return;}
             // email
-            var email='hero@hero.com'; if(hackEmail.length>0){email=hackEmail;}
-            // deal
-	    var deal='deal'; 
-            var dealEl=document.querySelector('.dealMainFieldTitle.name');
-            if(dealEl){deal=dealEl.innerHTML;}
+            var email=''; //if(hackEmail.length>0){email=hackEmail;}
+            // deal name
+	    var dealName='deal'; 
+            var dealNameEl=document.querySelector('div.dealMainFieldTitle > div.name > div.gwt-HTML');
+            if(dealNameEl){dealName=dealNameEl.innerText;}
+            // deal amount
+	    var dealAmount='$'; 
+            var dealAmountEl=document.querySelector('div.amountContainer > div.amount');
+            if(dealAmountEl){dealAmount=dealAmountEl.innerText;}
             // user
-	    var user='user'; 
+	    var userName='me'; 
             var userEl=document.querySelector("a.userName");
-            if(userEl){user=userEl.innerHTML;}
+            if(userEl){userName=userEl.innerText;}
             // contact
             var contact='contact';
             var rtEl=dmtocEl.parentNode.querySelector("a.relatedTo");
-            if(rtEl){contact=rtEl.innerHTML;}
+            if(rtEl){contact=rtEl.innerText;}
 
-            if(hackEmail.length>0){email=hackEmail;}
-
-            //<a href=”mailto:obama@whitehouse.gov?subject=Congrats%20Obama&body=Enjoy%20your%20stay%0ARegards%20″>
+            if(hackEmail.length>0){email=hackEmail;}           
 
 
             var html=''
-            var templateParams={"$deal":deal,"$contact":contact,"$user":user};
+            var templateParams={"$dealName":dealName,"$dealAmount":dealAmount,"$contact":contact,"$userName":userName};
             for(var i=0;i<mailTemplates.length;i++){
               var subject=templatize(mailTemplates[i].subject,templateParams);
               var body=templatize(mailTemplates[i].body,templateParams);
@@ -247,6 +270,7 @@ const observeConfig = { attributes: true, childList: true, characterData: true, 
             
             ssntEl.classList.remove('showAll');
             ssntEl.classList.add('hideAll');
+            ssntEl.innerText="Hide mail templates";
           }
           else{
             var coEl=ssntEl.parentNode.querySelector(".sendToMailTemplatesContainer");
@@ -255,6 +279,7 @@ const observeConfig = { attributes: true, childList: true, characterData: true, 
             // hide
             ssntEl.classList.remove('hideAll');
             ssntEl.classList.add('showAll');
+            ssntEl.innerText="Build mail templates";
           }
 
         }
@@ -266,6 +291,121 @@ const observeConfig = { attributes: true, childList: true, characterData: true, 
      }
     }
   }
+
+
+
+
+
+  function rebuildMailToList(dmtcEl)
+  {
+
+            // show all
+            var coEl=dmtcEl.querySelector(".sendToMailTemplatesContainer");
+            if(!coEl){console.error('!sendToMailTemplatesContainer');return;}
+            // email
+            var email=''; //if(hackEmail.length>0){email=hackEmail;}
+            // deal name
+	    var dealName='deal'; 
+            var dealNameEl=document.querySelector('div.dealMainFieldTitle > div.name > div.gwt-HTML');
+            if(dealNameEl){dealName=dealNameEl.innerText;}
+            // deal amount
+	    var dealAmount='$'; 
+            var dealAmountEl=document.querySelector('div.amountContainer > div.amount');
+            if(dealAmountEl){dealAmount=dealAmountEl.innerText;}
+            // user
+	    var userName='me'; 
+            var userEl=document.querySelector("a.userName");
+            if(userEl){userName=userEl.innerText;}
+            // contact
+            var contact='contact';
+            var rtEl=dmtocEl.parentNode.querySelector("a.relatedTo");
+            if(rtEl){contact=rtEl.innerText;}
+
+            if(hackEmail.length>0){email=hackEmail;}           
+
+
+            var html=''
+            var templateParams={"$dealName":dealName,"$dealAmount":dealAmount,"$contact":contact,"$userName":userName};
+            for(var i=0;i<mailTemplates.length;i++){
+              var subject=templatize(mailTemplates[i].subject,templateParams);
+              var body=templatize(mailTemplates[i].body,templateParams);
+              html+='<a href="mailto:'+email+'?subject='+escape(subject)+'&body='+escape(body)+'">'+mailTemplates[i].name +'</a></br>'
+            }
+            coEl.innerHTML=html;
+
+
+  }
+
+  function rebuildDealHack2(piwEl){
+      //console.log('rebuildDealHack2');
+
+     var dmtcEl=piwEl.querySelector(".dealMailToContainer")
+     
+     if (dmtcEl){
+        
+        rebuildMailToList(dmtcEl);
+
+     }
+     else {
+
+
+      var giEl=piwEl.querySelector(".generalInfo");
+      if(giEl){
+
+      //console.log('!!!.dealMailToContainer 000');
+
+      dmtocEl = document.createElement("div");
+      dmtocEl.setAttribute('class', 'dealMailToContainer');
+      var html=
+         '<div class="dealMainToField">'
+         // hideAll showSendMailTemplates
+         +'<div class="sendToMailTemplatesContainer" style="display:none;"></div>'         
+         +'<a class="showAll showSendMailTemplates">Show mail templates</a>'        
+         +'</div>';
+
+      dmtocEl.innerHTML=html;
+      giEl.appendChild(dmtocEl);
+
+
+      rebuildMailToList(dmtocEl);
+
+     // HackDealEmail();
+
+      ssntEl=dmtocEl.querySelector("a.showSendMailTemplates");
+      if(ssntEl){
+        ssntEl.onclick=function(){
+          //var ssntEl=dmtocEl.querySelector("a.showSendMailTemplates");
+          taistApi.log("ssntEl.onclick");
+          var coEl=ssntEl.parentNode.querySelector(".sendToMailTemplatesContainer");
+          if(ssntEl.classList.contains('showAll')){
+            coEl.style.display="block";
+            ssntEl.classList.remove('showAll');
+            ssntEl.classList.add('hideAll');
+            ssntEl.innerText="Hide mail templates";
+          }
+          else{
+            
+            //coEl.innerHTML="";
+            coEl.style.display="none";
+            // hide
+            ssntEl.classList.remove('hideAll');
+            ssntEl.classList.add('showAll');
+            ssntEl.innerText="Show mail templates";
+          }
+
+        }
+      }
+
+      //console.log('!!!.dealMailToContainer 111');
+      }
+
+     } // 
+
+
+  }
+
+
+
 
   function rebuildTemplates(sdvEl){
     
@@ -532,25 +672,34 @@ const observeConfig = { attributes: true, childList: true, characterData: true, 
   }
 }
 
+//var userNameObserver=null;
+var contentPanelObserver=null;
+var mainPanelObserver1=null;
+var mainPanelObserver2=null;
+var mainPanelObserver3=null;
 
-var mainPanelObserver=null;
-var SettingsDealsViewCounter=0;
-var profileInfoWrapperCounter=0;
+var profileInfoWrapperObserver=null;
+//var SettingsDealsViewCounter=0;
+//var profileInfoWrapperCounter=0;
+var dealNameSaved="";
+var dealAmountSaved="";
+var relatedToSaved="";
+var userNameSaved="";
 
 function prepareIt() {
 
 taistApi.log("prepareIt");
 
 
-window.addEventListener("hashchange", function(){
- var hash=location.hash;
- console.log('hashchange',hash);
- if(hash.search("#app/deals/")==0)
- {
-  console.log("#app/deals/");
-  //HackDealEmail();
- }
-}, false);
+//window.addEventListener("hashchange", function(){
+// var hash=location.hash;
+// console.log('hashchange',hash);
+// if(hash.search("#app/deals/")==0)
+// {
+//  console.log("#app/deals/");
+//  //HackDealEmail();
+// }
+//}, false);
 
 
 
@@ -571,27 +720,121 @@ if(bodyTarget){
 
  
   var bodyObserver = new MutationObserver(function(mutations) {
-       var nimbleMainPanel = document.querySelector("#main");
-       if(nimbleMainPanel && !mainPanelObserver){ 
-        mainPanelObserver=new MutationObserver(function(mutations) {
-          var SettingsDealsView = nimbleMainPanel.querySelector(".SettingsDealsView");
+
+/*
+       var unEl = document.querySelector("a.userName");
+       
+       if(unEl && !userNameObserver){
+        console.log("unEl",unEl);
+        userNameObserver=new MutationObserver(function(mutations) {                  
+         taistApi.log("userNameObserver",unEl.innerText);
+        });
+        userNameObserver.observe(unEl, { characterData: true });
+       }
+*/
+
+       var nimbleMainPanelEl = document.querySelector("#main");
+       if(nimbleMainPanelEl){
+       //taistApi.log("bodyObserver nimbleMainPanelEl");
+
+
+/*
+       var contentPanelEl = nimbleMainPanelEl.querySelector("div.contentPanel");
+       if(contentPanelEl && !contentPanelObserver){ 
+        contentPanelObserver=new MutationObserver(function(mutations) {                  
+         taistApi.log("contentPanelObserver",contentPanelEl.className);
+         if(contentPanelEl.classList.contains("DealView")){
+          // rebuild 
+  //         taistApi.log("contentPanelObserver rebuild rebuild rebuild ");
+  //         rebuildDealHack2();
+         }
+        });
+        contentPanelObserver.observe(contentPanelEl, { attributes: true });
+       }
+
+
+*/
+
+
+
+       if(nimbleMainPanelEl && !mainPanelObserver1){ 
+        mainPanelObserver1=new MutationObserver(function(mutations) {
+
+          var userNameEl = document.querySelector("a.userName");
+          if(userNameEl){
+           userNameChanged(userNameEl);
+          }
+
+          var profileInfoWrapperEl = nimbleMainPanelEl.querySelector(".profileInfoWrapper");
+          if(profileInfoWrapperEl){           
+//           rebuildDealHack(profileInfoWrapperEl);
+           //taistApi.log("mainPanelObserver1.disconnect() profileInfoWrapper();");
+
+	   //var dealNameEl = profileInfoWrapper.querySelector("div.dealMainFieldTitle > div.name > div.gwt-HTML");
+           //var dealNameEl = profileInfoWrapper.querySelector("generalInfo");
+           if(!profileInfoWrapperObserver){
+            //console.log('!profileInfoWrapperObserver'); 
+            profileInfoWrapperObserver=new MutationObserver(function(mutations) {
+             //console.log('profileInfoWrapperObserver!');
+             var mustUpdate=0; 
+	     var dealNameEl=profileInfoWrapperEl.querySelector('div.dealMainFieldTitle > div.name > div.gwt-HTML');
+             if(dealNameEl && dealNameSaved!=dealNameEl.innerText){
+               dealNameSaved=dealNameEl.innerText; mustUpdate++;
+               //console.log('dealNameEl.innerText',dealNameEl.innerText);
+             }
+             var dealAmountEl=profileInfoWrapperEl.querySelector('div.amountContainer > div.amount');
+             if(dealAmountEl  && dealAmountSaved!=dealAmountEl.innerText){
+               dealAmountSaved=dealAmountEl.innerText; mustUpdate++;
+               //console.log('dealAmountEl.innerText',dealAmountEl.innerText);
+             }
+             var relatedToEl=profileInfoWrapperEl.querySelector('div.relatedTo > a.relatedTo');
+             if(relatedToEl  && relatedToSaved!=relatedToEl.innerText){
+               relatedToSaved=relatedToEl.innerText; mustUpdate++;
+               //console.log('relatedToEl.innerText',relatedToEl.innerText);
+             }
+
+             //var userNameEl=document.querySelector("div.usernameContainer > a.userName");
+             //if(userNameEl && userNameSaved!=userNameEl.innerText){
+             //  userNameSaved=userNameEl.innerText; mustUpdate++;
+             //  console.log('userNameEl.innerText',userNameEl.innerText);
+             //}
+            
+             if(mustUpdate>0 || mailTemplatesUpdated)
+             {
+               rebuildDealHack2(profileInfoWrapperEl);
+               mailTemplatesUpdated=0;
+             }
+
+
+             console.log('profileInfoWrapperObserver mustUpdate',mustUpdate);
+            });
+           profileInfoWrapperObserver.observe(profileInfoWrapperEl, { childList: true, subtree : true}); 
+           } 
+
+
+           mainPanelObserver1.disconnect();
+          }
+
+        });
+        mainPanelObserver1.observe(nimbleMainPanelEl, { childList: true, subtree : true});
+       }
+
+       if(nimbleMainPanelEl && !mainPanelObserver2){ 
+        mainPanelObserver2=new MutationObserver(function(mutations) {
+          var SettingsDealsView = nimbleMainPanelEl.querySelector(".SettingsDealsView");
           if(SettingsDealsView){
            rebuildTemplates(SettingsDealsView);
-           taistApi.log("mainPanelObserver.disconnect() SettingsDealsView");
-           SettingsDealsViewCounter++;          
-          }
-          var profileInfoWrapper = nimbleMainPanel.querySelector(".profileInfoWrapper");
-          if(profileInfoWrapper){           
-           rebuildDealHack(profileInfoWrapper);
-           taistApi.log("mainPanelObserver.disconnect() profileInfoWrapper();");
-           profileInfoWrapperCounter++;          
-          }
-          if(SettingsDealsViewCounter>0 && profileInfoWrapperCounter>0){mainPanelObserver.disconnect();}
+           taistApi.log("mainPanelObserver2.disconnect() SettingsDealsView");
+           mainPanelObserver2.disconnect();
+          }          
         });
-        mainPanelObserver.observe(nimbleMainPanel, { childList: true, subtree : true});
-        taistApi.log("bodyObserver.disconnect()");
-        bodyObserver.disconnect(); 
+        mainPanelObserver2.observe(nimbleMainPanelEl, { childList: true, subtree : true});        
        }
+//      taistApi.log("bodyObserver.disconnect()");
+      bodyObserver.disconnect(); 
+     }
+
+
   });
  
  

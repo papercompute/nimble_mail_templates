@@ -51,6 +51,12 @@ padding-bottom: 5px;
 width: 100%;
 }
 
+.sendToMailTemplatesContainer{
+overflow-y:auto;
+max-width:115px;
+max-height:68px;
+}
+
 .ModifyMailTemplateView .buttonFooter{
 margin-top: 5px;
 }
