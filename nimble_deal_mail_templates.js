@@ -789,11 +789,6 @@ function init() {
 
                             var profileInfoWrapperEl = nimbleMainPanelEl.querySelector(".profileInfoWrapper");
                             if (profileInfoWrapperEl) {
-                                //           rebuildDealHack(profileInfoWrapperEl);
-                                //taistApi.log("mainPanelObserver1.disconnect() profileInfoWrapper();");
-
-                                //var dealNameEl = profileInfoWrapper.querySelector("div.dealMainFieldTitle > div.name > div.gwt-HTML");
-                                //var dealNameEl = profileInfoWrapper.querySelector("generalInfo");
                                 if (!profileInfoWrapperObserver) {
                                     //console.log('!profileInfoWrapperObserver'); 
                                     profileInfoWrapperObserver = new MutationObserver(function(mutations) {
@@ -818,34 +813,11 @@ function init() {
                                             console.log('relatedToEl.innerText', relatedToEl.innerText);
                                         }
 
-                                        //var userNameEl=document.querySelector("div.usernameContainer > a.userName");
-                                        //if(userNameEl && userNameSaved!=userNameEl.innerText){
-                                        //  userNameSaved=userNameEl.innerText; mustUpdate++;
-                                        //  console.log('userNameEl.innerText',userNameEl.innerText);
-                                        //}
 
                                         if (mustUpdate > 0 || mailTemplatesUpdated) {
                                             rebuildDealHack2(profileInfoWrapperEl);
                                             mailTemplatesUpdated = 0;
 
-                                            //https://app.nimble.com/api/v1/calendars?_cb=1423416936870
-                                            //https://app.nimble.com/api/v1/contacts/detail/?id=54cf2b4aae3156678c01851a&_cb=1423416936886
-
-                                            //Accept:*/*
-                                            //Accept-Encoding:gzip, deflate, sdch
-                                            //Accept-Language:en-US,en;q=0.8
-                                            /*
-                                            Authorization:Nimble token="c4f6ae2f-0d38-493e-8694-34f7cd92fdd5"
-                                            Connection:keep-alive
-                                            Cookie:user_app_domains=app; _fl_bCRAftdDsQpWLobKWDDwwHvNYeCwdCJi=4b23ec34-9e1d-7470-3bd2-835e7db9a574; _bizo_bzid=f5b8ff79-c24e-4c45-8738-40341e146198; _bizo_cksm=594C6E866FE1A20E; __ar_v4=SSU6FR2D6JERXI3LHKYVUA%3A20150209%3A69%7CJQK6DRROAZAX5J7VACBMR2%3A20150209%3A69%7C2QAN7HB7ONHQNEVIFN6TGF%3A20150209%3A69; __utmt=1; mp_687bb7e87d89043978a1ea6ccdbb14a1_mixpanel=%7B%22distinct_id%22%3A%20%2254cf2b48ae3156678c01848f%22%2C%22%24initial_referrer%22%3A%20%22http%3A%2F%2Fwww.nimble.com%2F%22%2C%22%24initial_referring_domain%22%3A%20%22www.nimble.com%22%2C%22mp_name_tag%22%3A%20%22drinksomuchtea%40gmail.com%22%2C%22Plan%22%3A%20%22Business%22%2C%22Account%20Status%22%3A%20%22Trial%22%2C%22Account%20Admin%22%3A%20%22Yes%22%2C%22Access%20Type%22%3A%20%22Web%22%2C%22Google%20Apps%20User%22%3A%20%22No%22%2C%22__mps%22%3A%20%7B%7D%2C%22__mpso%22%3A%20%7B%7D%2C%22__mpa%22%3A%20%7B%7D%2C%22__mpap%22%3A%20%5B%5D%7D; _bizo_np_stats=155%3D2879%2C; nimble-session-cookie=c4f6ae2f-0d38-493e-8694-34f7cd92fdd5; __utma=75812746.1469836266.1423249201.1423249201.1423335026.2; __utmb=75812746.14.10.1423335026; __utmc=75812746; __utmz=75812746.1423155180.1.1.utmcsr=nimble.com|utmccn=(referral)|utmcmd=referral|utmcct=/
-                                            Host:app.nimble.com
-                                            Referer:https://app.nimble.com/
-                                            User-Agent:Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36
-                                            X-Nimble-Company:drink
-                                            X-Nimble-Company-Id:4e04c77c849e978fee2ea80a
-                                            X-Nimble-User:drinksomuchtea@gmail.com
-                                            X-Nimble-User-Id:54cf2b48ae3156678c01848f
-                                            */
 
                                             var xmlhttp;
                                             var mailid;
@@ -876,24 +848,18 @@ function init() {
                                             var href = relatedToEl.href;
                                             if (href.length > 24) {
                                                 var id_pos = href.search("id") + 3;
-                                                //var id=location.hash.substring(id_pos,id_pos+24);
                                                 mailid = href.substring(id_pos, id_pos + 24);
                                                 if (hackEmailId != mailid) {
                                                     console.log('mailid', mailid);
                                                     var url = "api/v1/contacts/detail/?id=" + mailid;
                                                     console.log('url', url);
                                                     xmlhttp.open("GET", url, true);
-                                                    //xmlhttp.setRequestHeader('Authorization','Nimble token="c4f6ae2f-0d38-493e-8694-34f7cd92fdd5');
                                                     xmlhttp.setRequestHeader('Authorization', 'Nimble token="' + hackNimbleToken + '"');
 
                                                     xmlhttp.send();
                                                 }
                                             }
 
-
-
-                                            //console.log('profileInfoWrapperObserver mustUpdate',mustUpdate);
-                                            //httpGet('api/v1/contacts/detail/?id=54cf2b4aae3156678c01851a&_cb=1423416936886',function(response){console.log(response);},function(err){console.log(err);});
                                         }
 
 
