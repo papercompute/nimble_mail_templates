@@ -1,3 +1,3 @@
 # nimble_mail_templates
-status: hacking
+status: hacked nah
 
